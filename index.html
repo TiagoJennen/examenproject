@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitale Planning</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <img src="Logo.png" alt="Logo" class="logo">
+
+    <div class="add-customer-btn" id="add-customer-btn">+</div>
+
+    <div class="date-container" id="date-container">
+    </div>
+
+    <div class="customer-form" id="customer-form">
+        <span class="close-form" id="close-form">&times;</span> 
+        <h2>Klant toevoegen</h2>
+    
+        <label for="customer-name">Naam:</label>
+        <input type="text" id="customer-name" placeholder="Naam van klant">
+    
+        <label for="customer-id">Omschrijving:</label>
+        <input type="text" id="customer-id" placeholder="Ordernummer">
+    
+        <label for="customer-enddate">Einddatum:</label>
+        <input type="date" id="customer-enddate" placeholder="Einddatum">
+    
+        <label for="customer-job-type">Type werk:</label>
+        <select id="customer-job-type">
+            <option value="" disabled selected>Selecteer type werk</option>
+            <option value="type1">Buigen</option>
+            <option value="type2">Lijmen</option>
+            <option value="type3">Freezen</option>
+            <option value="type4">Laseren</option>
+            <option value="type5">Zagen</option>
+            <option value="type6">Graveren</option>
+        </select>
+    
+        <label for="customer-employee">Werknemer:</label>
+        <select id="customer-employee">
+            <option value="" disabled selected>Selecteer werknemer</option>
+            <option value="employee1">MB</option>
+            <option value="employee2">DB</option>
+            <option value="employee3">RA</option>
+            <option value="employee4">MH</option>
+        </select>
+    
+        <label for="customer-pdf">PDF-bestand:</label>
+        <input type="file" id="customer-pdf" accept=".pdf">
+    
+        <button id="save-customer">Opslaan</button>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

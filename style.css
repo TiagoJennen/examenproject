@@ -1,0 +1,158 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc; 
+}
+
+.logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: auto;
+}
+
+.add-customer-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    font-size: 30px;
+    text-align: center;
+    line-height: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+
+.add-customer-btn:hover {
+    background-color: #45a049;
+}
+
+.date-container {
+    padding: 0;
+    margin-top: 100px;
+}
+
+.date-box {
+    width: 100%;
+    padding: 20px;
+    padding-left: 50px;
+    text-align: left;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 10px solid black;
+}
+
+.date-box:hover {
+    background-color: #ddd;
+}
+
+.customer-details {
+    display: none;
+    margin-top: 10px;
+    padding: 5px;
+    background-color: #f2f2f2;
+    border: 1px solid #ddd;
+}
+
+.customer-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: none;
+    width: 400px;
+    z-index: 999;
+    font-size: 16px;
+    overflow-y: auto;
+}
+
+
+.customer-form label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.customer-form input,
+.customer-form select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.customer-form input:focus,
+.customer-form select:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.customer-form button {
+    padding: 12px 15px;
+    margin-top: 15px;
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.customer-form button:hover {
+    background-color: #45a049;
+}
+
+#cancel-customer {
+    background-color: #f44336;
+    margin-top: 10px;
+}
+
+#cancel-customer:hover {
+    background-color: #e53935;
+}
+.close-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-form:hover {
+    color: #f44336; 
+}
