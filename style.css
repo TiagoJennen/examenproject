@@ -91,7 +91,6 @@ body {
     overflow-y: auto;
 }
 
-
 .customer-form label {
     font-size: 14px;
     color: #333;
@@ -142,6 +141,7 @@ body {
 #cancel-customer:hover {
     background-color: #e53935;
 }
+
 .close-form {
     position: absolute;
     top: 10px;
@@ -155,4 +155,20 @@ body {
 
 .close-form:hover {
     color: #f44336; 
+}
+
+#summary-container {
+    margin-top: 120px;
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+#summary-container h2 {
+    margin-top: 0;
+}
+
+#customer-summary {
+    list-style-type: none;
+    padding-left: 0;
 }
