@@ -68,11 +68,44 @@ body {
 }
 
 .customer-details {
-    display: none;
-    margin-top: 10px;
-    padding: 5px;
-    background-color: #f2f2f2;
+    max-height: 0;
+    overflow: hidden;
+    transition: none;
+    opacity: 0;
+    padding: 0 10px;
+    background-color: #f9f9f9;
     border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+}
+
+.customer-details.show {
+    max-height: 500px; /* Pas dit aan afhankelijk van de verwachte hoogte */
+    opacity: 1;
+}
+
+/* Stijl voor de tabel */
+.customer-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.customer-table th,
+.customer-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.customer-table th {
+    background-color: #f1f1f1;
+    font-weight: bold;
+    text-align: left;
+}
+
+.customer-table td {
+    background-color: #fff;
 }
 
 .customer-form {
@@ -171,4 +204,17 @@ body {
 #customer-summary {
     list-style-type: none;
     padding-left: 0;
+}
+
+.summary-item {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #e7f5e7;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    color: #333;
+    font-size: 14px;
+    opacity: 1; /* Direct zichtbaar */
+    transform: none; /* Geen beweging */
+    transition: none; /* Geen animatie */
 }

@@ -24,13 +24,17 @@ window.onload = function () {
         arrow.classList.add('arrow');
 
         const dateText = document.createElement('span');
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const dateStr = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000)
+            .toISOString()
+            .split('T')[0];
+        console.log('Datum met tijdzonecorrectie gegenereerd in loop:', dateStr); // Debugging
         dateText.textContent = currentDate.toLocaleDateString('nl-NL');
 
         dateBox.appendChild(arrow);
         dateBox.appendChild(dateText);
 
         const detailId = 'details-' + dateStr;
+        console.log('Detail ID aangemaakt:', detailId); // Debugging
 
         dateBox.onclick = function () {
             toggleDetails(detailId, dateBox, arrow);
@@ -48,12 +52,13 @@ window.onload = function () {
         customerDetails.id = detailId;
 
         const table = document.createElement('table');
+        table.classList.add('customer-table'); // Voeg een klasse toe voor styling
         table.style.width = '100%';
         table.style.borderCollapse = 'collapse';
 
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        const headers = ['Klant', 'Omschrijving', 'Type werk', 'Werknemer', 'Pakbon'];
+        const headers = ['Naam Klant', 'Omschrijving', 'Type Werk', 'Werknemer', 'Pakbon'];
 
         headers.forEach(headerText => {
             const th = document.createElement('th');
@@ -68,6 +73,7 @@ window.onload = function () {
 
         const tbody = document.createElement('tbody');
         tbody.id = `table-body-${dateStr}`;
+        console.log('Tabel body ID aangemaakt:', tbody.id); // Debugging
         table.appendChild(tbody);
 
         customerDetails.appendChild(table);
@@ -92,18 +98,31 @@ window.onload = function () {
     saveCustomerBtn.onclick = function () {
         const name = document.getElementById('customer-name').value;
         const id = document.getElementById('customer-id').value;
-        const endDate = document.getElementById('customer-enddate').value;
+        const endDate = document.getElementById('customer-enddate').value; // Datum uit formulier
         const jobType = document.getElementById('customer-job-type').value;
         const employee = document.getElementById('customer-employee').value;
         const pdfInput = document.getElementById('customer-pdf');
 
-        if (!selectedDateId) {
-            alert('Klik eerst op een datum!');
+        console.log('Datum uit formulier:', endDate); // Debugging
+
+        if (!endDate) {
+            alert('Selecteer een datum in het formulier!');
             return;
         }
 
-        if (name && id && endDate && jobType && employee) {
-            const tbody = document.getElementById(`table-body-${selectedDateId}`);
+        const dateStr = new Date(new Date(endDate).getTime() - new Date(endDate).getTimezoneOffset() * 60000)
+            .toISOString()
+            .split('T')[0];
+        console.log('Datum met tijdzonecorrectie geformatteerd voor tabel:', dateStr); // Debugging
+
+        if (name && id && jobType && employee) {
+            const tbody = document.getElementById(`table-body-${dateStr}`);
+            if (!tbody) {
+                console.error('Geen tabel gevonden voor datum:', dateStr); // Debugging
+                alert('Er is een probleem met de geselecteerde datum.');
+                return;
+            }
+
             const row = document.createElement('tr');
 
             [name, id, jobType, employee].forEach(text => {
@@ -129,10 +148,16 @@ window.onload = function () {
             row.appendChild(pdfTd);
             tbody.appendChild(row);
 
-            // Samenvatting toevoegen
+            // Samenvatting toevoegen met animatie
             const summaryItem = document.createElement('div');
-            summaryItem.textContent = `${name} (${jobType}) toegevoegd voor ${selectedDateId}`;
+            summaryItem.classList.add('summary-item');
+            summaryItem.textContent = `${name} (${jobType}) toegevoegd voor ${dateStr}`;
             summary.appendChild(summaryItem);
+
+            // Animatie toepassen
+            setTimeout(() => {
+                summaryItem.classList.add('show');
+            }, 10);
 
             // Formulier verbergen en resetten
             customerForm.style.display = 'none';
@@ -149,14 +174,27 @@ window.onload = function () {
 
     function toggleDetails(detailId, dateBox, arrow) {
         const customerDetails = document.getElementById(detailId);
-        selectedDateId = detailId.replace('details-', '');
 
-        if (customerDetails.style.display === 'block') {
-            customerDetails.style.display = 'none';
+        if (customerDetails.classList.contains('show')) {
+            // Sluit de details en reset de geselecteerde datum
+            customerDetails.classList.remove('show');
             arrow.style.transform = 'rotate(0deg)';
+            selectedDateId = null; // Reset de geselecteerde datum
+            console.log('Details gesloten, geselecteerde datum gereset.'); // Debugging
         } else {
-            customerDetails.style.display = 'block';
+            // Sluit andere geopende details
+            document.querySelectorAll('.customer-details.show').forEach(detail => {
+                detail.classList.remove('show');
+            });
+            document.querySelectorAll('.arrow').forEach(arrow => {
+                arrow.style.transform = 'rotate(0deg)';
+            });
+
+            // Open de details
+            customerDetails.classList.add('show');
             arrow.style.transform = 'rotate(90deg)';
+            selectedDateId = detailId.replace('details-', '');
+            console.log('Geselecteerde datum ingesteld op:', selectedDateId); // Debugging
         }
     }
 };
