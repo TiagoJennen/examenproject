@@ -1,8 +1,8 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
+    margin: 0; 
     padding: 0;
-    background-color: #f4f7fc; 
+    background-color: #f4f7fc;
 }
 
 .logo {
@@ -36,7 +36,7 @@ body {
 
 .date-container {
     padding: 0;
-    margin-top: 100px;
+    margin: 0; 
 }
 
 .date-box {
@@ -47,12 +47,12 @@ body {
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     cursor: pointer;
-    transition: background-color 0.3s;
     box-sizing: border-box;
     position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 0; 
 }
 
 .arrow {
@@ -70,9 +70,9 @@ body {
 .customer-details {
     max-height: 0;
     overflow: hidden;
-    transition: none;
     opacity: 0;
-    padding: 0 10px;
+    padding: 0;
+    margin: 0; 
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     border-top: none;
@@ -82,12 +82,15 @@ body {
 .customer-details.show {
     max-height: 500px; 
     opacity: 1;
+    padding: 0; 
+    margin: 0; 
 }
 
 .customer-table {
     width: 100%;
+    table-layout: fixed; 
     border-collapse: collapse;
-    margin-top: 10px;
+    margin: 0; 
 }
 
 .customer-table th,
@@ -95,6 +98,7 @@ body {
     padding: 8px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    word-wrap: break-word; 
 }
 
 .customer-table th {
@@ -105,6 +109,12 @@ body {
 
 .customer-table td {
     background-color: #fff;
+}
+
+.customer-table th:last-child,
+.customer-table td:last-child {
+    width: 100px;
+    text-align: center;
 }
 
 .customer-form {
