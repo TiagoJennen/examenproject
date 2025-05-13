@@ -108,7 +108,7 @@ body {
 }
 
 .customer-table td {
-    background-color: #fff;
+    background-color: #fff; /* Standaard witte achtergrond voor cellen */
 }
 
 .customer-table th:last-child,
@@ -240,4 +240,12 @@ body {
 .summary-item.show, .debug-message.show {
     opacity: 1; 
     transform: translateY(0); 
+}
+
+.high-priority {
+    background-color: #ff3e3e !important; /* Roodachtige achtergrond voor hoge prioriteit */
+}
+
+tr:not([style*="background-color"]) {
+    background-color: inherit; /* Laat inline-stijl de achtergrondkleur bepalen */
 }

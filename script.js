@@ -100,12 +100,14 @@ window.onload = function () {
         const employee = employeeSelect.selectedOptions[0]?.text || '';
 
         const pdfInput = document.getElementById('customer-pdf');
+        const isHighPriority = document.getElementById('customer-priority').checked;
+
+        console.log('Hoge prioriteit aangevinkt:', isHighPriority);
 
         if (!endDate) {
             alert('Selecteer een datum in het formulier!');
             return;
         }
-
         const dateStr = new Date(new Date(endDate).getTime() - new Date(endDate).getTimezoneOffset() * 60000)
             .toISOString()
             .split('T')[0];
@@ -113,60 +115,61 @@ window.onload = function () {
         if (name && id && jobType && employee) {
             const tbody = document.getElementById(`table-body-${dateStr}`);
             if (!tbody) {
-                alert('Er is een probleem met de geselecteerde datum.');
-                return;
-            }
+        alert('Er is een probleem met de geselecteerde datum.');
+        return;
+    }
 
-            const row = document.createElement('tr');
+    const row = document.createElement('tr');
+row.style.setProperty('background-color', isHighPriority ? '#ff3e3e' : '#fff', 'important');
+    [name, id, jobType, employee].forEach(text => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        row.appendChild(td);
+    });
 
-            [name, id, jobType, employee].forEach(text => {
-                const td = document.createElement('td');
-                td.textContent = text;
-                row.appendChild(td);
-            });
+    const pdfTd = document.createElement('td');
+    if (pdfInput.files.length > 0) {
+        const file = pdfInput.files[0];
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(file);
+        link.target = '_blank';
+        link.textContent = file.name;
+        pdfTd.appendChild(link);
+    } else {
+        pdfTd.textContent = 'Geen PDF';
+    }
+    row.appendChild(pdfTd);
 
-            const pdfTd = document.createElement('td');
-            if (pdfInput.files.length > 0) {
-                const file = pdfInput.files[0];
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(file);
-                link.target = '_blank';
-                link.textContent = file.name;
-                pdfTd.appendChild(link);
-            } else {
-                pdfTd.textContent = 'Geen PDF';
-            }
-            row.appendChild(pdfTd);
+    const deleteTd = document.createElement('td');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Verwijderen';
+    deleteBtn.classList.add('delete-btn');
 
-            const deleteTd = document.createElement('td');
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Verwijderen';
-            deleteBtn.classList.add('delete-btn');
+    deleteBtn.onclick = function () {
+        tbody.removeChild(row);
 
-            deleteBtn.onclick = function () {
-                tbody.removeChild(row);
+        const debugMessage = document.createElement('div');
+        debugMessage.classList.add('debug-message');
+        debugMessage.textContent = `Klant "${name}" verwijderd van datum ${dateStr}`;
+        summary.appendChild(debugMessage);
 
-            const debugMessage = document.createElement('div');
-            debugMessage.classList.add('debug-message'); 
-            debugMessage.textContent = `Klant "${name}" verwijderd van datum ${dateStr}`;
-            summary.appendChild(debugMessage);
+        setTimeout(() => {
+            debugMessage.classList.add('show');
+        }, 10);
 
+        setTimeout(() => {
+            debugMessage.classList.remove('show');
             setTimeout(() => {
-                debugMessage.classList.add('show');
-            }, 10);
+                summary.removeChild(debugMessage);
+            }, 300);
+        }, 5000);
+    };
 
-            setTimeout(() => {
-                debugMessage.classList.remove('show');
-                setTimeout(() => {
-                    summary.removeChild(debugMessage); 
-                }, 300); 
-            }, 5000);
-        };
+    deleteTd.appendChild(deleteBtn);
+    row.appendChild(deleteTd);
 
-            deleteTd.appendChild(deleteBtn);
-            row.appendChild(deleteTd);
-
-            tbody.appendChild(row);
+    tbody.appendChild(row);
+    console.log('Rij toegevoegd aan tabel:', row);
 
             const summaryItem = document.createElement('div');
             summaryItem.classList.add('summary-item');
@@ -191,29 +194,21 @@ window.onload = function () {
             jobTypeSelect.selectedIndex = 0;
             employeeSelect.selectedIndex = 0;
             document.getElementById('customer-pdf').value = '';
+            document.getElementById('customer-priority').checked = false;
         } else {
             alert('Vul alle velden in!');
         }
     };
 
-    function toggleDetails(detailId, dateBox, arrow) {
+        function toggleDetails(detailId, dateBox, arrow) {
         const customerDetails = document.getElementById(detailId);
 
         if (customerDetails.classList.contains('show')) {
             customerDetails.classList.remove('show');
             arrow.style.transform = 'rotate(0deg)';
-            selectedDateId = null;
         } else {
-            document.querySelectorAll('.customer-details.show').forEach(detail => {
-                detail.classList.remove('show');
-            });
-            document.querySelectorAll('.arrow').forEach(arrow => {
-                arrow.style.transform = 'rotate(0deg)';
-            });
-
             customerDetails.classList.add('show');
             arrow.style.transform = 'rotate(90deg)';
-            selectedDateId = detailId.replace('details-', '');
-        }
+        }    
     }
 };
