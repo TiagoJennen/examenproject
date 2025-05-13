@@ -6,8 +6,6 @@ window.onload = function () {
     const closeFormBtn = document.getElementById('close-form');
     const summary = document.getElementById('summary-container');
 
-    let selectedDateId = null;
-
     const today = new Date();
     const startDate = new Date(today);
     startDate.setHours(0, 0, 0, 0);
@@ -54,7 +52,7 @@ window.onload = function () {
 
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        const headers = ['Naam Klant', 'Omschrijving', 'Type Werk', 'Werknemer', 'Pakbon', 'Acties'];
+        const headers = ['', 'Naam Klant', 'Omschrijving', 'Type Werk', 'Werknemer', 'Pakbon', 'Acties'];
 
         headers.forEach(headerText => {
             const th = document.createElement('th');
@@ -115,61 +113,97 @@ window.onload = function () {
         if (name && id && jobType && employee) {
             const tbody = document.getElementById(`table-body-${dateStr}`);
             if (!tbody) {
-        alert('Er is een probleem met de geselecteerde datum.');
-        return;
-    }
+                alert('Er is een probleem met de geselecteerde datum.');
+                return;
+            }
 
-    const row = document.createElement('tr');
-row.style.setProperty('background-color', isHighPriority ? '#ff3e3e' : '#fff', 'important');
-    [name, id, jobType, employee].forEach(text => {
-        const td = document.createElement('td');
-        td.textContent = text;
-        row.appendChild(td);
-    });
+            const row = document.createElement('tr');
 
-    const pdfTd = document.createElement('td');
-    if (pdfInput.files.length > 0) {
-        const file = pdfInput.files[0];
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(file);
-        link.target = '_blank';
-        link.textContent = file.name;
-        pdfTd.appendChild(link);
-    } else {
-        pdfTd.textContent = 'Geen PDF';
-    }
-    row.appendChild(pdfTd);
+            const checkboxTd = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.classList.add('customer-checkbox');
+            checkbox.style.marginLeft = '100px'; // Verplaats de checkbox naar rechts
+            checkboxTd.appendChild(checkbox);
+            row.appendChild(checkboxTd);
 
-    const deleteTd = document.createElement('td');
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Verwijderen';
-    deleteBtn.classList.add('delete-btn');
+            [name, id, jobType, employee].forEach(text => {
+                const td = document.createElement('td');
+                td.textContent = text;
+                td.style.padding = '5px 10px'; // Pas de padding aan
+                td.style.textAlign = 'left'; // Zorg dat de tekst links wordt uitgelijnd
+                row.appendChild(td);
+            });
 
-    deleteBtn.onclick = function () {
-        tbody.removeChild(row);
+            // Voeg de PDF-kolom toe
+            const pdfTd = document.createElement('td');
+            if (pdfInput.files.length > 0) {
+                const file = pdfInput.files[0];
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(file);
+                link.target = '_blank';
+                link.textContent = file.name;
+                pdfTd.appendChild(link);
+            } else {
+                pdfTd.textContent = 'Geen PDF';
+            }
+            row.appendChild(pdfTd);
 
-        const debugMessage = document.createElement('div');
-        debugMessage.classList.add('debug-message');
-        debugMessage.textContent = `Klant "${name}" verwijderd van datum ${dateStr}`;
-        summary.appendChild(debugMessage);
+            // Voeg de Verwijderen-knop toe
+            const deleteTd = document.createElement('td');
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Verwijderen';
+            deleteBtn.classList.add('delete-btn');
 
-        setTimeout(() => {
-            debugMessage.classList.add('show');
-        }, 10);
+            deleteBtn.onclick = function () {
+                const modal = document.getElementById('delete-modal');
+                const deleteMessage = document.getElementById('delete-message');
+                const confirmDeleteBtn = document.getElementById('confirm-delete');
+                const cancelDeleteBtn = document.getElementById('cancel-delete');
 
-        setTimeout(() => {
-            debugMessage.classList.remove('show');
-            setTimeout(() => {
-                summary.removeChild(debugMessage);
-            }, 300);
-        }, 5000);
-    };
+                // Stel de melding in met de naam van de klant
+                deleteMessage.textContent = `Weet je zeker dat je klant "${name}" wilt verwijderen?`;
 
-    deleteTd.appendChild(deleteBtn);
-    row.appendChild(deleteTd);
+                // Toon het modale venster
+                modal.style.display = 'flex';
 
-    tbody.appendChild(row);
-    console.log('Rij toegevoegd aan tabel:', row);
+                // Bevestig verwijderen
+                confirmDeleteBtn.onclick = function () {
+                    tbody.removeChild(row);
+
+                    const debugMessage = document.createElement('div');
+                    debugMessage.classList.add('debug-message');
+                    debugMessage.textContent = `Klant "${name}" verwijderd van datum ${dateStr}`;
+                    summary.appendChild(debugMessage);
+
+                    setTimeout(() => {
+                        debugMessage.classList.add('show');
+                    }, 10);
+
+                    setTimeout(() => {
+                        debugMessage.classList.remove('show');
+                        setTimeout(() => {
+                            summary.removeChild(debugMessage);
+                        }, 300);
+                    }, 5000);
+
+                    // Sluit het modale venster
+                    modal.style.display = 'none';
+                };
+
+                // Annuleer verwijderen
+                cancelDeleteBtn.onclick = function () {
+                    // Sluit het modale venster
+                    modal.style.display = 'none';
+                };
+            };
+
+            deleteTd.appendChild(deleteBtn);
+            row.appendChild(deleteTd);
+
+            // Voeg de rij toe aan de tabel
+            tbody.appendChild(row);
+            console.log('Rij toegevoegd aan tabel:', row);
 
             const summaryItem = document.createElement('div');
             summaryItem.classList.add('summary-item');
@@ -200,7 +234,7 @@ row.style.setProperty('background-color', isHighPriority ? '#ff3e3e' : '#fff', '
         }
     };
 
-        function toggleDetails(detailId, dateBox, arrow) {
+    function toggleDetails(detailId, dateBox, arrow) {
         const customerDetails = document.getElementById(detailId);
 
         if (customerDetails.classList.contains('show')) {
@@ -209,6 +243,6 @@ row.style.setProperty('background-color', isHighPriority ? '#ff3e3e' : '#fff', '
         } else {
             customerDetails.classList.add('show');
             arrow.style.transform = 'rotate(90deg)';
-        }    
+        }
     }
 };
