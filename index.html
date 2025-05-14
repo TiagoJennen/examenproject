@@ -54,21 +54,39 @@
     </div>
 
     <div id="summary-container"></div>
+
     <div id="search-container">
-        <label for="search-date">Zoek op datum:</label>
-        <input type="date" id="search-date">
-        <button id="search-button">Zoeken</button>
+        <div>
+            <label for="search-date">Zoek op datum:</label>
+            <input type="date" id="search-date">
+            <button id="search-button">Zoeken</button>
+        </div>
+        <div>
+            <label for="search-name">Zoek op naam:</label>
+            <input type="text" id="search-name" placeholder="Naam van klant">
+            <button id="search-name-button">Zoeken</button>
+        </div>
     </div>
-    <div id="date-container"></div>
+
+    <div id="date-container" style="margin-top: 20px;"></div>
+
+    <div id="actions-modal" class="modal">
+        <div class="modal-content">
+            <p id="actions-message">Welke actie wil je uitvoeren?</p>
+            <button id="action-check" class="modal-action-btn">Afvinken</button>
+            <button id="action-edit" class="modal-action-btn">Bewerken</button>
+            <button id="action-delete" class="modal-action-btn">Verwijderen</button>
+            <button id="cancel-actions" class="modal-action-btn">Annuleren</button>
+        </div>
+    </div>
 
     <div id="delete-modal" class="modal">
-    <div class="modal-content">
-        <p id="delete-message"></p>
-        <button id="confirm-delete">Ja</button>
-        <button id="cancel-delete">Nee</button>
+        <div class="modal-content">
+            <p id="delete-message"></p>
+            <button id="confirm-delete">Ja</button>
+            <button id="cancel-delete">Nee</button>
+        </div>
     </div>
-</div>
-
-    <script src="script.js"></script>
+<div id="notification-container" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 2000; display: none; padding: 10px 20px; color: white; border-radius: 5px; font-size: 16px; text-align: center;"></div>    <script src="script.js"></script>
 </body>
 </html>

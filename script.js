@@ -7,6 +7,21 @@ window.onload = function () {
     const summary = document.getElementById('summary-container');
     const searchButton = document.getElementById('search-button');
     const searchDateInput = document.getElementById('search-date');
+    const searchNameInput = document.getElementById('search-name');
+    const searchNameButton = document.getElementById('search-name-button');
+
+    const actionsModal = document.getElementById('actions-modal');
+    const actionCheck = document.getElementById('action-check');
+    const actionEdit = document.getElementById('action-edit');
+    const actionDelete = document.getElementById('action-delete');
+    const cancelActions = document.getElementById('cancel-actions');
+
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteMessage = document.getElementById('delete-message');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
+
+    const notificationContainer = document.getElementById('notification-container');
 
     const today = new Date();
     const startDate = new Date(today);
@@ -15,8 +30,9 @@ window.onload = function () {
 
     let currentDate = startDate;
     let allDateBoxes = [];
-
     let savedCustomers = JSON.parse(localStorage.getItem('savedCustomers')) || {};
+    let selectedRow = null;
+    let selectedDateStr = null;
 
     while (currentDate <= endDate) {
         const dateBox = document.createElement('div');
@@ -100,6 +116,44 @@ window.onload = function () {
         }
     };
 
+    searchNameButton.onclick = function () {
+        const searchName = searchNameInput.value.trim().toLowerCase();
+        if (!searchName) {
+            alert('Voer een geldige naam in.');
+            return;
+        }
+
+        let found = false;
+
+        for (const dateStr in savedCustomers) {
+            const customers = savedCustomers[dateStr];
+            const tbody = document.getElementById(`table-body-${dateStr}`);
+            const dateBox = document.querySelector(`[data-date="${dateStr}"]`);
+            const customerDetails = document.getElementById(`details-${dateStr}`);
+
+            if (customers) {
+                customers.forEach((customer, index) => {
+                    if (customer.name.toLowerCase().includes(searchName)) {
+                        if (customerDetails && dateBox) {
+                            customerDetails.classList.add('show');
+                            dateBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+
+                        const row = tbody.children[index];
+                        row.classList.add('highlight');
+                        setTimeout(() => row.classList.remove('highlight'), 2000);
+
+                        found = true;
+                    }
+                });
+            }
+        }
+
+        if (!found) {
+            alert('Geen klant gevonden met de opgegeven naam.');
+        }
+    };
+
     addCustomerBtn.onclick = function () {
         customerForm.style.display = 'block';
     };
@@ -141,21 +195,14 @@ window.onload = function () {
             const row = createCustomerRow(name, id, jobType, employee, pdfInput, dateStr, tbody);
             tbody.appendChild(row);
 
-            // Opslaan in localStorage
+            row.classList.add('highlight');
+            setTimeout(() => row.classList.remove('highlight'), 2000);
+
             if (!savedCustomers[dateStr]) savedCustomers[dateStr] = [];
             savedCustomers[dateStr].push({ name, id, jobType, employee, pdfName: pdfInput.files[0]?.name || '' });
             localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
 
-            const summaryItem = document.createElement('div');
-            summaryItem.classList.add('summary-item');
-            summaryItem.textContent = `${name} (${jobType}) toegevoegd voor ${dateStr}`;
-            summary.appendChild(summaryItem);
-
-            setTimeout(() => summaryItem.classList.add('show'), 10);
-            setTimeout(() => {
-                summaryItem.classList.remove('show');
-                setTimeout(() => summary.removeChild(summaryItem), 300);
-            }, 5000);
+            showNotification(`Klant "${name}" is toegevoegd.`, 'success');
 
             customerForm.style.display = 'none';
             document.getElementById('customer-name').value = '';
@@ -202,50 +249,76 @@ window.onload = function () {
         }
         row.appendChild(pdfTd);
 
-        const deleteTd = document.createElement('td');
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Verwijderen';
-        deleteBtn.classList.add('delete-btn');
+        const actionsTd = document.createElement('td');
+        actionsTd.style.position = 'relative';
 
-        deleteBtn.onclick = function () {
-            const modal = document.getElementById('delete-modal');
-            const deleteMessage = document.getElementById('delete-message');
-            const confirmDeleteBtn = document.getElementById('confirm-delete');
-            const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const actionsBtn = document.createElement('button');
+        actionsBtn.textContent = 'Acties';
+        actionsBtn.classList.add('action-btn', 'actions-btn');
+        actionsTd.appendChild(actionsBtn);
 
-            deleteMessage.textContent = `Weet je zeker dat je klant "${name}" wilt verwijderen?`;
-            modal.style.display = 'flex';
-
-            confirmDeleteBtn.onclick = function () {
-                tbody.removeChild(row);
-
-                savedCustomers[dateStr] = savedCustomers[dateStr].filter(c => !(c.name === name && c.id === id));
-                localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
-
-                const debugMessage = document.createElement('div');
-                debugMessage.classList.add('debug-message');
-                debugMessage.textContent = `Klant "${name}" verwijderd van datum ${dateStr}`;
-                summary.appendChild(debugMessage);
-
-                setTimeout(() => debugMessage.classList.add('show'), 10);
-                setTimeout(() => {
-                    debugMessage.classList.remove('show');
-                    setTimeout(() => summary.removeChild(debugMessage), 300);
-                }, 5000);
-
-                modal.style.display = 'none';
-            };
-
-            cancelDeleteBtn.onclick = function () {
-                modal.style.display = 'none';
-            };
+        actionsBtn.onclick = function () {
+            selectedRow = row;
+            selectedDateStr = dateStr;
+            actionsModal.style.display = 'flex';
         };
 
-        deleteTd.appendChild(deleteBtn);
-        row.appendChild(deleteTd);
+        row.appendChild(actionsTd);
 
         return row;
     }
+
+    actionCheck.onclick = function () {
+        if (selectedRow) {
+            selectedRow.style.textDecoration = selectedRow.style.textDecoration === 'line-through' ? 'none' : 'line-through';
+        }
+        actionsModal.style.display = 'none';
+    };
+
+    actionEdit.onclick = function () {
+        if (selectedRow) {
+            const cells = selectedRow.children;
+            document.getElementById('customer-name').value = cells[1].textContent;
+            document.getElementById('customer-id').value = cells[2].textContent;
+            document.getElementById('customer-enddate').value = selectedDateStr;
+            document.getElementById('customer-job-type').value = cells[3].textContent;
+            document.getElementById('customer-employee').value = cells[4].textContent;
+
+            customerForm.style.display = 'block';
+            selectedRow.remove();
+        }
+        actionsModal.style.display = 'none';
+    };
+
+    actionDelete.onclick = function () {
+        if (selectedRow) {
+            const customerName = selectedRow.children[1].textContent; 
+
+            deleteMessage.textContent = `Weet je zeker dat je klant "${customerName}" wilt verwijderen?`;
+            deleteModal.style.display = 'flex';
+
+            confirmDeleteBtn.onclick = function () {
+                const tbody = selectedRow.parentElement;
+                tbody.removeChild(selectedRow);
+
+                savedCustomers[selectedDateStr] = savedCustomers[selectedDateStr].filter(c => c.name !== customerName);
+                localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
+
+                deleteModal.style.display = 'none';
+                actionsModal.style.display = 'none';
+
+                showNotification(`Klant "${customerName}" is verwijderd.`, 'error');
+            };
+
+            cancelDeleteBtn.onclick = function () {
+                deleteModal.style.display = 'none';
+            };
+        }
+    };
+
+    cancelActions.onclick = function () {
+        actionsModal.style.display = 'none';
+    };
 
     function toggleDetails(detailId, dateBox, arrow) {
         const customerDetails = document.getElementById(detailId);
@@ -256,6 +329,23 @@ window.onload = function () {
             customerDetails.classList.add('show');
             arrow.style.transform = 'rotate(90deg)';
         }
+    }
+
+    function showNotification(message, type) {
+        const notificationContainer = document.getElementById('notification-container');
+        notificationContainer.textContent = message;
+
+        if (type === 'error') {
+            notificationContainer.style.backgroundColor = '#f44336'; 
+        } else if (type === 'success') {
+            notificationContainer.style.backgroundColor = '#4CAF50';
+        }
+
+        notificationContainer.style.display = 'block';
+
+        setTimeout(() => {
+            notificationContainer.style.display = 'none';
+        }, 4000);
     }
 
     for (const dateStr in savedCustomers) {
