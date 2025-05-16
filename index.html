@@ -66,6 +66,16 @@
             <input type="text" id="search-name" placeholder="Naam van klant">
             <button id="search-name-button">Zoeken</button>
         </div>
+        <div>
+            <label for="search-week">Zoek op week:</label>
+            <input type="number" id="search-week" min="1" max="53" placeholder="Weeknummer">
+            <button id="search-week-button">Zoeken</button>
+        </div>
+        <div>
+            <label for="search-employee">Zoek op werknemer:</label>
+            <input type="text" id="search-employee" placeholder="Werknemer">
+            <button id="search-employee-button">Zoeken</button>
+        </div>
     </div>
 
     <div id="date-container" style="margin-top: 20px;"></div>
@@ -73,7 +83,6 @@
     <div id="actions-modal" class="modal">
         <div class="modal-content">
             <p id="actions-message">Welke actie wil je uitvoeren?</p>
-            <button id="action-check" class="modal-action-btn">Afvinken</button>
             <button id="action-edit" class="modal-action-btn">Bewerken</button>
             <button id="action-delete" class="modal-action-btn">Verwijderen</button>
             <button id="cancel-actions" class="modal-action-btn">Annuleren</button>
@@ -87,6 +96,7 @@
             <button id="cancel-delete">Nee</button>
         </div>
     </div>
-<div id="notification-container" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 2000; display: none; padding: 10px 20px; color: white; border-radius: 5px; font-size: 16px; text-align: center;"></div>    <script src="script.js"></script>
+    <div id="notification-container" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 2000; display: none; padding: 10px 20px; color: white; border-radius: 5px; font-size: 16px; text-align: center;"></div>
+    <script src="script.js"></script>
 </body>
 </html>
