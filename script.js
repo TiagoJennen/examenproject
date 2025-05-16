@@ -748,6 +748,11 @@ window.onload = function () {
 
         notificationContainer.style.display = 'block';
 
+    // Voeg klik-event toe om notificatie te sluiten
+        notificationContainer.onclick = function () {
+            notificationContainer.style.display = 'none';
+        };
+
         setTimeout(() => {
             notificationContainer.style.display = 'none';
         }, 7000);
