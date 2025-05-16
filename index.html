@@ -24,28 +24,47 @@
         <label for="customer-enddate">Einddatum:</label>
         <input type="date" id="customer-enddate">
 
-        <label for="customer-job-type">Type werk:</label>
-        <select id="customer-job-type">
-            <option value="" disabled selected>Selecteer type werk</option>
-            <option value="type1">Buigen</option>
-            <option value="type2">Lijmen</option>
-            <option value="type3">Freezen</option>
-            <option value="type4">Laseren</option>
-            <option value="type5">Zagen</option>
-            <option value="type6">Graveren</option>
-        </select>
+        <label>Type werk:</label>
+        <div class="multiselect" id="jobtype-multiselect">
+            <div class="selectBox" onclick="toggleCheckboxList('jobtype-options')">
+                <span class="selected-text" id="jobtype-selected-text">Selecteer type werk</span>
+                <div class="arrow">&#9660;</div>
+            </div>
+            <div class="checkbox-list" id="jobtype-options" style="display:none;">
+                <label><input type="checkbox" value="Buigen"> Buigen</label>
+                <label><input type="checkbox" value="Lijmen"> Lijmen</label>
+                <label><input type="checkbox" value="Freezen"> Freezen</label>
+                <label><input type="checkbox" value="Laseren"> Laseren</label>
+                <label><input type="checkbox" value="Zagen"> Zagen</label>
+                <label><input type="checkbox" value="Graveren"> Graveren</label>
+            </div>
+        </div>
 
-        <label for="customer-employee">Werknemer:</label>
-        <select id="customer-employee">
-            <option value="" disabled selected>Selecteer werknemer</option>
-            <option value="employee1">MB</option>
-            <option value="employee2">DB</option>
-            <option value="employee3">RA</option>
-            <option value="employee4">MH</option>
-        </select>
+        <label>Werknemer:</label>
+        <div class="multiselect" id="employee-multiselect">
+            <div class="selectBox" onclick="toggleCheckboxList('employee-options')">
+                <span class="selected-text" id="employee-selected-text">Selecteer werknemer</span>
+                <div class="arrow">&#9660;</div>
+            </div>
+            <div class="checkbox-list" id="employee-options" style="display:none;">
+                <label><input type="checkbox" value="MB"> MB</label>
+                <label><input type="checkbox" value="DB"> DB</label>
+                <label><input type="checkbox" value="RA"> RA</label>
+                <label><input type="checkbox" value="MH"> MH</label>
+            </div>
+        </div>
 
-        <label for="customer-priority">Hoge prioriteit:</label>
-        <input type="checkbox" id="customer-priority">
+        <label>Hoge prioriteit:</label>
+        <div class="priority-radio">
+            <label for="priority-yes-radio">
+                <input type="radio" name="customer-priority" value="ja" id="priority-yes-radio">
+                Ja
+            </label>
+            <label for="priority-no-radio">
+                <input type="radio" name="customer-priority" value="nee" id="priority-no-radio" checked>
+                Nee
+            </label>
+        </div>
 
         <label for="customer-pdf">PDF-bestand:</label>
         <input type="file" id="customer-pdf" accept=".pdf">
@@ -89,13 +108,15 @@
         </div>
     </div>
 
-    <div id="delete-modal" class="modal">
+    <!-- Delete modal voor bevestiging verwijderen -->
+    <div id="delete-modal" class="modal" style="display:none;">
         <div class="modal-content">
             <p id="delete-message"></p>
-            <button id="confirm-delete">Ja</button>
-            <button id="cancel-delete">Nee</button>
+            <button id="confirm-delete" class="modal-action-btn" style="background:#f44336;color:#fff;">Verwijderen</button>
+            <button id="cancel-delete" class="modal-action-btn">Annuleren</button>
         </div>
     </div>
+
     <div id="notification-container" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 2000; display: none; padding: 10px 20px; color: white; border-radius: 5px; font-size: 16px; text-align: center;"></div>
     <script src="script.js"></script>
 </body>
