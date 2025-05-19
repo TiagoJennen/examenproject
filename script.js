@@ -459,6 +459,15 @@ window.onload = function () {
                             }
                         }
                     }
+                    // Verwijder dag als leeg
+                    if (savedCustomers[editOldDateStr].length === 0) {
+                        delete savedCustomers[editOldDateStr];
+                        localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
+                    }
+                    if (checkedCustomers[editOldDateStr] && checkedCustomers[editOldDateStr].length === 0) {
+                        delete checkedCustomers[editOldDateStr];
+                        localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
+                    }
                 }
                 // Voeg nieuwe klant toe
                 if (!savedCustomers[dateStr]) savedCustomers[dateStr] = [];
@@ -481,6 +490,11 @@ window.onload = function () {
                     checkedCustomers[editOldDateStr] = checkedCustomers[editOldDateStr].filter(chk =>
                         !(chk.name === editOldCustomer.name && chk.id === editOldCustomer.id && JSON.stringify(chk.jobTypes || [chk.jobType]) === JSON.stringify(editOldCustomer.jobTypes || [editOldCustomer.jobType]) && JSON.stringify(chk.employees || [chk.employee]) === JSON.stringify(editOldCustomer.employees || [editOldCustomer.employee]))
                     );
+                    // Verwijder dag als leeg
+                    if (checkedCustomers[editOldDateStr].length === 0) {
+                        delete checkedCustomers[editOldDateStr];
+                        localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
+                    }
                     localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
                 }
 
@@ -489,12 +503,7 @@ window.onload = function () {
                 row.classList.add('highlight');
                 setTimeout(() => row.classList.remove('highlight'), 2000);
 
-                // --- Vervangen: showNotification door melding na reload ---
-                localStorage.setItem('notificationAfterReload', JSON.stringify({
-                    message: `Klant bewerkt:<br>${klantInfoString(klantObj, dateStr)}`,
-                    type: 'success'
-                }));
-                location.reload();
+                showNotification(`Klant bewerkt:<br>${klantInfoString(klantObj, dateStr)}`, 'success');
             } else {
                 // Toevoegen
                 const row = createCustomerRow(name, id, jobTypes, employees, pdfInput, dateStr, tbody, isHighPriority, dateStr);
@@ -507,12 +516,7 @@ window.onload = function () {
                 savedCustomers[dateStr].push(klantObj);
                 localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
 
-                // --- Vervangen: showNotification door melding na reload ---
-                localStorage.setItem('notificationAfterReload', JSON.stringify({
-                    message: `Klant toegevoegd:<br>${klantInfoString(klantObj, dateStr)}`,
-                    type: 'success'
-                }));
-                location.reload();
+                showNotification(`Klant toegevoegd:<br>${klantInfoString(klantObj, dateStr)}`, 'success');
             }
 
             customerForm.style.display = 'none';
@@ -608,6 +612,11 @@ window.onload = function () {
                     location.reload();
                 }
             }
+            // Verwijder dag als leeg
+            if (checkedCustomers[dateStr] && checkedCustomers[dateStr].length === 0) {
+                delete checkedCustomers[dateStr];
+                localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
+            }
         });
 
         // Bij laden: zet checkbox en groen als nodig
@@ -679,9 +688,15 @@ window.onload = function () {
                 const tbody = selectedRow.parentElement;
                 tbody.removeChild(selectedRow);
 
+                // Verwijder klant uit savedCustomers
                 savedCustomers[selectedDateStr] = savedCustomers[selectedDateStr].filter(c =>
                     !(c.name === klantObj.name && c.id === klantObj.id && JSON.stringify(c.jobTypes) === JSON.stringify(klantObj.jobTypes) && JSON.stringify(c.employees) === JSON.stringify(klantObj.employees))
                 );
+                // Verwijder dag als leeg
+                if (savedCustomers[selectedDateStr].length === 0) {
+                    delete savedCustomers[selectedDateStr];
+                }
+                // Sla altijd op!
                 localStorage.setItem('savedCustomers', JSON.stringify(savedCustomers));
 
                 // Ook uit checkedCustomers verwijderen
@@ -689,31 +704,34 @@ window.onload = function () {
                     checkedCustomers[selectedDateStr] = checkedCustomers[selectedDateStr].filter(c =>
                         !(c.name === klantObj.name && c.id === klantObj.id && JSON.stringify(c.jobTypes) === JSON.stringify(klantObj.jobTypes) && JSON.stringify(c.employees) === JSON.stringify(klantObj.employees))
                     );
-                    localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
+                    if (checkedCustomers[selectedDateStr].length === 0) {
+                        delete checkedCustomers[selectedDateStr];
                 }
+                localStorage.setItem('checkedCustomers', JSON.stringify(checkedCustomers));
+            }
 
-                deleteModal.style.display = 'none';
-                actionsModal.style.display = 'none';
+            deleteModal.style.display = 'none';
+            actionsModal.style.display = 'none';
 
-                showNotification(
-                    `Klant verwijderd:<br>${klantInfoString(klantObj, selectedDateStr)}`,
-                    'error'
+            showNotification(
+                `Klant verwijderd:<br>${klantInfoString(klantObj, selectedDateStr)}`,
+                'error'
+            );
+
+    // Herlaad pagina als alles afgevinkt is op een dag vóór vandaag
+            if (selectedDateStr < todayStr) {
+                const klanten = savedCustomers[selectedDateStr] || [];
+                const checked = checkedCustomers[selectedDateStr] || [];
+                const allChecked = klanten.length > 0 && klanten.every(k =>
+                    checked.some(c =>
+                        c.name === k.name && c.id === k.id && JSON.stringify(c.jobTypes) === JSON.stringify(k.jobTypes) && JSON.stringify(c.employees) === JSON.stringify(k.employees)
+                    )
                 );
-
-                // Herlaad pagina als alles afgevinkt is op een dag vóór vandaag
-                if (selectedDateStr < todayStr) {
-                    const klanten = savedCustomers[selectedDateStr] || [];
-                    const checked = checkedCustomers[selectedDateStr] || [];
-                    const allChecked = klanten.length > 0 && klanten.every(k =>
-                        checked.some(c =>
-                            c.name === k.name && c.id === k.id && JSON.stringify(c.jobTypes) === JSON.stringify(k.jobTypes) && JSON.stringify(c.employees) === JSON.stringify(k.employees)
-                        )
-                    );
-                    if (allChecked || klanten.length === 0) {
-                        location.reload();
-                    }
+                if (allChecked || klanten.length === 0) {
+                    location.reload();
                 }
-            };
+            }
+        };
 
             cancelDeleteBtn && (cancelDeleteBtn.onclick = function () {
                 deleteModal.style.display = 'none';
@@ -748,7 +766,7 @@ window.onload = function () {
 
         notificationContainer.style.display = 'block';
 
-    // Voeg klik-event toe om notificatie te sluiten
+        // Voeg klik-event toe om notificatie te sluiten
         notificationContainer.onclick = function () {
             notificationContainer.style.display = 'none';
         };
@@ -763,7 +781,7 @@ window.onload = function () {
         if (!isDayRelevant(dateStr)) continue;
         const tbody = document.getElementById(`table-body-${dateStr}`);
         if (tbody) {
-        // Sorteer: eerst hoge prioriteit, dan de rest
+            // Sorteer: eerst hoge prioriteit, dan de rest
             const sorted = [...savedCustomers[dateStr]].sort((a, b) => {
                 return (b.isHighPriority === true) - (a.isHighPriority === true);
             });
