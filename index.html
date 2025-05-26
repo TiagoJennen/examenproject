@@ -1,123 +1,187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Digitale Planning</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <img src="Logo.png" alt="Logo" class="logo">
+    <!-- Verwijzing naar het externe CSS-bestand voor styling -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Logo van de applicatie -->
+    <img src="Logo.png" alt="Logo" class="logo" />
 
+    <!-- Knop om het formulier voor het toevoegen van een klant te openen -->
     <div class="add-customer-btn" id="add-customer-btn">+</div>
 
-    <div class="customer-form" id="customer-form" style="display: none;">
-        <span class="close-form" id="close-form">&times;</span> 
-        <h2>Klant toevoegen</h2>
+    <!-- Formulier om een nieuwe klant toe te voegen; standaard verborgen -->
+    <div class="customer-form" id="customer-form" style="display: none">
+      <!-- Knop om het klantformulier te sluiten -->
+      <span class="close-form" id="close-form">&times;</span>
+      <h2>Klant toevoegen</h2>
 
-        <label for="customer-name">Naam:</label>
-        <input type="text" id="customer-name" placeholder="Naam van klant">
+      <!-- Input veld voor de naam van de klant -->
+      <label for="customer-name">Naam:</label>
+      <input type="text" id="customer-name" placeholder="Naam van klant" />
 
-        <label for="customer-id">Omschrijving:</label>
-        <input type="text" id="customer-id" placeholder="Ordernummer">
+      <!-- Input veld voor de orderomschrijving of ID -->
+      <label for="customer-id">Omschrijving:</label>
+      <input type="text" id="customer-id" placeholder="Ordernummer" />
 
-        <label for="customer-enddate">Einddatum:</label>
-        <input type="date" id="customer-enddate">
+      <!-- Datumveld voor de einddatum van de opdracht -->
+      <label for="customer-enddate">Einddatum:</label>
+      <input type="date" id="customer-enddate" />
 
-        <label>Type werk:</label>
-        <div class="multiselect" id="jobtype-multiselect">
-            <div class="selectBox" onclick="toggleCheckboxList('jobtype-options')">
-                <span class="selected-text" id="jobtype-selected-text">Selecteer type werk</span>
-                <div class="arrow">&#9660;</div>
-            </div>
-            <div class="checkbox-list" id="jobtype-options" style="display:none;">
-                <label><input type="checkbox" value="Buigen"> Buigen</label>
-                <label><input type="checkbox" value="Lijmen"> Lijmen</label>
-                <label><input type="checkbox" value="Freezen"> Freezen</label>
-                <label><input type="checkbox" value="Laseren"> Laseren</label>
-                <label><input type="checkbox" value="Zagen"> Zagen</label>
-                <label><input type="checkbox" value="Graveren"> Graveren</label>
-            </div>
+      <!-- Meerdere selectiemogelijkheden voor type werk -->
+      <label>Type werk:</label>
+      <div class="multiselect" id="jobtype-multiselect">
+        <div class="selectBox" onclick="toggleCheckboxList('jobtype-options')">
+          <span class="selected-text" id="jobtype-selected-text"
+            >Selecteer type werk</span
+          >
+          <div class="arrow">&#9660;</div>
         </div>
-
-        <label>Werknemer:</label>
-        <div class="multiselect" id="employee-multiselect">
-            <div class="selectBox" onclick="toggleCheckboxList('employee-options')">
-                <span class="selected-text" id="employee-selected-text">Selecteer werknemer</span>
-                <div class="arrow">&#9660;</div>
-            </div>
-            <div class="checkbox-list" id="employee-options" style="display:none;">
-                <label><input type="checkbox" value="MB"> MB</label>
-                <label><input type="checkbox" value="DB"> DB</label>
-                <label><input type="checkbox" value="RA"> RA</label>
-                <label><input type="checkbox" value="MH"> MH</label>
-            </div>
+        <div class="checkbox-list" id="jobtype-options" style="display: none">
+          <!-- Checkbox opties voor verschillende type werk -->
+          <label><input type="checkbox" value="Buigen" /> Buigen</label>
+          <label><input type="checkbox" value="Lijmen" /> Lijmen</label>
+          <label><input type="checkbox" value="Freezen" /> Freezen</label>
+          <label><input type="checkbox" value="Laseren" /> Laseren</label>
+          <label><input type="checkbox" value="Zagen" /> Zagen</label>
+          <label><input type="checkbox" value="Graveren" /> Graveren</label>
         </div>
+      </div>
 
-        <label>Hoge prioriteit:</label>
-        <div class="priority-radio">
-            <label for="priority-yes-radio">
-                <input type="radio" name="customer-priority" value="ja" id="priority-yes-radio">
-                Ja
-            </label>
-            <label for="priority-no-radio">
-                <input type="radio" name="customer-priority" value="nee" id="priority-no-radio" checked>
-                Nee
-            </label>
+      <!-- Meerdere selectiemogelijkheden voor werknemers -->
+      <label>Werknemer:</label>
+      <div class="multiselect" id="employee-multiselect">
+        <div class="selectBox" onclick="toggleCheckboxList('employee-options')">
+          <span class="selected-text" id="employee-selected-text"
+            >Selecteer werknemer</span
+          >
+          <div class="arrow">&#9660;</div>
         </div>
+        <div class="checkbox-list" id="employee-options" style="display: none">
+          <!-- Checkbox opties voor verschillende werknemers -->
+          <label><input type="checkbox" value="MB" /> MB</label>
+          <label><input type="checkbox" value="DB" /> DB</label>
+          <label><input type="checkbox" value="RA" /> RA</label>
+          <label><input type="checkbox" value="MH" /> MH</label>
+        </div>
+      </div>
 
-        <label for="customer-pdf">PDF-bestand:</label>
-        <input type="file" id="customer-pdf" accept=".pdf">
+      <!-- Radiobuttons om prioriteit van de klant aan te geven -->
+      <label>Hoge prioriteit:</label>
+      <div class="priority-radio">
+        <label for="priority-yes-radio">
+          <input
+            type="radio"
+            name="customer-priority"
+            value="ja"
+            id="priority-yes-radio"
+          />
+          Ja
+        </label>
+        <label for="priority-no-radio">
+          <input
+            type="radio"
+            name="customer-priority"
+            value="nee"
+            id="priority-no-radio"
+            checked
+          />
+          Nee
+        </label>
+      </div>
 
-        <button id="save-customer">Opslaan</button>
+      <!-- Uploadveld voor het toevoegen van een PDF-bestand -->
+      <label for="customer-pdf">PDF-bestand:</label>
+      <input type="file" id="customer-pdf" accept=".pdf" />
+
+      <!-- Knop om de ingevulde klantgegevens op te slaan -->
+      <button id="save-customer">Opslaan</button>
     </div>
 
+    <!-- Container voor overzicht of samenvatting van klanten -->
     <div id="summary-container"></div>
 
+    <!-- Zoeksectie om klanten te filteren op verschillende criteria -->
     <div id="search-container">
-        <div>
-            <label for="search-date">Zoek op datum:</label>
-            <input type="date" id="search-date">
-            <button id="search-button">Zoeken</button>
-        </div>
-        <div>
-            <label for="search-name">Zoek op naam:</label>
-            <input type="text" id="search-name" placeholder="Naam van klant">
-            <button id="search-name-button">Zoeken</button>
-        </div>
-        <div>
-            <label for="search-week">Zoek op week:</label>
-            <input type="number" id="search-week" min="1" max="53" placeholder="Weeknummer">
-            <button id="search-week-button">Zoeken</button>
-        </div>
-        <div>
-            <label for="search-employee">Zoek op werknemer:</label>
-            <input type="text" id="search-employee" placeholder="Werknemer">
-            <button id="search-employee-button">Zoeken</button>
-        </div>
+      <div>
+        <label for="search-date">Zoek op datum:</label>
+        <input type="date" id="search-date" />
+        <button id="search-button">Zoeken</button>
+      </div>
+      <div>
+        <label for="search-name">Zoek op naam:</label>
+        <input type="text" id="search-name" placeholder="Naam van klant" />
+        <button id="search-name-button">Zoeken</button>
+      </div>
+      <div>
+        <label for="search-week">Zoek op week:</label>
+        <input
+          type="number"
+          id="search-week"
+          min="1"
+          max="53"
+          placeholder="Weeknummer"
+        />
+        <button id="search-week-button">Zoeken</button>
+      </div>
+      <div>
+        <label for="search-employee">Zoek op werknemer:</label>
+        <input type="text" id="search-employee" placeholder="Werknemer" />
+        <button id="search-employee-button">Zoeken</button>
+      </div>
     </div>
 
-    <div id="date-container" style="margin-top: 20px;"></div>
+    <!-- Container voor dynamische datumgerelateerde inhoud (bv. kalenderweergave) -->
+    <div id="date-container" style="margin-top: 20px"></div>
 
+    <!-- Modal voor het tonen van acties zoals bewerken of verwijderen -->
     <div id="actions-modal" class="modal">
-        <div class="modal-content">
-            <p id="actions-message">Welke actie wil je uitvoeren?</p>
-            <button id="action-edit" class="modal-action-btn">Bewerken</button>
-            <button id="action-delete" class="modal-action-btn">Verwijderen</button>
-            <button id="cancel-actions" class="modal-action-btn">Annuleren</button>
-        </div>
+      <div class="modal-content">
+        <p id="actions-message">Welke actie wil je uitvoeren?</p>
+        <button id="action-edit" class="modal-action-btn">Bewerken</button>
+        <button id="action-delete" class="modal-action-btn">Verwijderen</button>
+        <button id="cancel-actions" class="modal-action-btn">Annuleren</button>
+      </div>
     </div>
 
-    <!-- Delete modal voor bevestiging verwijderen -->
-    <div id="delete-modal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <p id="delete-message"></p>
-            <button id="confirm-delete" class="modal-action-btn" style="background:#f44336;color:#fff;">Verwijderen</button>
-            <button id="cancel-delete" class="modal-action-btn">Annuleren</button>
-        </div>
+    <!-- Modal voor bevestiging bij verwijderen van een klant -->
+    <div id="delete-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <p id="delete-message"></p>
+        <button
+          id="confirm-delete"
+          class="modal-action-btn"
+          style="background: #f44336; color: #fff"
+        >
+          Verwijderen
+        </button>
+        <button id="cancel-delete" class="modal-action-btn">Annuleren</button>
+      </div>
     </div>
 
-    <div id="notification-container" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 2000; display: none; padding: 10px 20px; color: white; border-radius: 5px; font-size: 16px; text-align: center;"></div>
+    <!-- Notificatiecontainer om tijdelijke meldingen aan de gebruiker te tonen -->
+    <div
+      id="notification-container"
+      style="
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000;
+        display: none;
+        padding: 10px 20px;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        text-align: center;
+      "
+    ></div>
+
+    <!-- JavaScript-bestand voor functionaliteit van de applicatie -->
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
