@@ -23,7 +23,6 @@ window.onload = function () {
   const customerForm = document.getElementById("customer-form");
   const saveCustomerBtn = document.getElementById("save-customer");
   const closeFormBtn = document.getElementById("close-form");
-  const summary = document.getElementById("summary-container");
   const searchButton = document.getElementById("search-button");
   const searchDateInput = document.getElementById("search-date");
   const searchNameInput = document.getElementById("search-name");
@@ -44,10 +43,6 @@ window.onload = function () {
   const deleteMessage = document.getElementById("delete-message");
   const confirmDeleteBtn = document.getElementById("confirm-delete");
   const cancelDeleteBtn = document.getElementById("cancel-delete");
-
-  const notificationContainer = document.getElementById(
-    "notification-container",
-  );
 
   // Multiselect helpers
   function getSelectedJobTypes() {
@@ -779,7 +774,7 @@ window.onload = function () {
         JSON.stringify(checkedCustomers),
       );
 
-      // Herlaad pagina als alles afgevinkt is op een dag vóór vandaag
+      // Herlaad pagina als alles afgevinkt ixs op een dag vóór vandaag
       if (dateStr < todayStr) {
         const klanten = savedCustomers[dateStr] || [];
         const checked = checkedCustomers[dateStr] || [];
