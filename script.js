@@ -1,13 +1,20 @@
+// Data lokaal opslaan in de browser
+function loadCustomers() {
+  const data = localStorage.getItem("customers");
+  return data ? JSON.parse(data) : {};
+}
+
+function saveCustomers(data) {
+  localStorage.setItem("customers", JSON.stringify(data));
+}
+
 // Multiselect dropdown openen/sluiten
 window.toggleCheckboxList = function (id) {
-  // Sluit eerst alle andere open dropdowns
   document.querySelectorAll(".checkbox-list").forEach((list) => {
     if (list.id !== id) list.style.display = "none";
   });
   const el = document.getElementById(id);
   el.style.display = el.style.display === "none" ? "block" : "none";
-
-  // Sluit dropdown als je buiten klikt
   function handler(e) {
     if (!el.contains(e.target) && !e.target.closest(".selectBox")) {
       el.style.display = "none";
@@ -30,9 +37,7 @@ window.onload = function () {
   const searchWeekInput = document.getElementById("search-week");
   const searchWeekButton = document.getElementById("search-week-button");
   const searchEmployeeInput = document.getElementById("search-employee");
-  const searchEmployeeButton = document.getElementById(
-    "search-employee-button",
-  );
+  const searchEmployeeButton = document.getElementById("search-employee-button");
 
   const actionsModal = document.getElementById("actions-modal");
   const actionEdit = document.getElementById("action-edit");
@@ -44,22 +49,16 @@ window.onload = function () {
   const confirmDeleteBtn = document.getElementById("confirm-delete");
   const cancelDeleteBtn = document.getElementById("cancel-delete");
 
-  // Multiselect helpers
   function getSelectedJobTypes() {
     return Array.from(
-      document.querySelectorAll(
-        '#jobtype-options input[type="checkbox"]:checked',
-      ),
+      document.querySelectorAll('#jobtype-options input[type="checkbox"]:checked')
     ).map((cb) => cb.value);
   }
   function getSelectedEmployees() {
     return Array.from(
-      document.querySelectorAll(
-        '#employee-options input[type="checkbox"]:checked',
-      ),
+      document.querySelectorAll('#employee-options input[type="checkbox"]:checked')
     ).map((cb) => cb.value);
   }
-  // Reset multiselects
   function resetMultiselects() {
     document
       .querySelectorAll('#jobtype-options input[type="checkbox"]')
@@ -72,7 +71,6 @@ window.onload = function () {
     document.getElementById("employee-selected-text").textContent =
       "Selecteer werknemer";
   }
-  // Zet multiselects bij edit
   function setMultiselectValues(jobTypes, employees) {
     document
       .querySelectorAll('#jobtype-options input[type="checkbox"]')
@@ -90,7 +88,6 @@ window.onload = function () {
       employees.length ? employees.join(", ") : "Selecteer werknemer";
   }
 
-  // Multiselect dropdowns: update geselecteerde tekst
   document
     .querySelectorAll('#jobtype-options input[type="checkbox"]')
     .forEach((cb) => {
@@ -110,32 +107,16 @@ window.onload = function () {
       });
     });
 
-  const today = new Date();
-  const startDate = new Date(today);
-  startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date(2040, 11, 31);
-
-  let savedCustomers = JSON.parse(localStorage.getItem("savedCustomers")) || {};
-  let checkedCustomers =
-    JSON.parse(localStorage.getItem("checkedCustomers")) || {};
+  // Data ophalen uit localStorage
+  let savedCustomers = loadCustomers();
+  let checkedCustomers = savedCustomers._checkedCustomers || {};
+  if (!savedCustomers._checkedCustomers) savedCustomers._checkedCustomers = checkedCustomers;
   let selectedRow = null;
   let selectedDateStr = null;
 
-  // --- Toegevoegd: Toon notificatie na reload als die in localStorage staat ---
-  const notificationAfterReload = localStorage.getItem(
-    "notificationAfterReload",
-  );
-  if (notificationAfterReload) {
-    const { message, type } = JSON.parse(notificationAfterReload);
-    showNotification(message, type);
-    localStorage.removeItem("notificationAfterReload");
-  }
-
-  // Maand structuur
   let allMonthBoxes = [];
   let monthMap = {};
 
-  // Helper voor weeknummer
   function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -144,73 +125,54 @@ window.onload = function () {
     return weekNo;
   }
 
-  // Helper om klantinfo als string te tonen (nu met datum)
   function klantInfoString(klant, datum) {
     return `Datum: ${datum}<br>Naam: ${klant.name}, Omschrijving: ${klant.id}, Type werk: ${(klant.jobTypes || [klant.jobType]).join(", ")}, Werknemer: ${(klant.employees || [klant.employee]).join(", ")}, PDF: ${klant.pdfName || "Geen PDF"}, Hoge prioriteit: ${klant.isHighPriority ? "Ja" : "Nee"}`;
   }
 
-  // Formulier resetten
   function resetCustomerForm() {
     document.getElementById("customer-name").value = "";
     document.getElementById("customer-id").value = "";
     document.getElementById("customer-enddate").value = "";
     document.getElementById("customer-pdf").value = "";
-    // Prioriteit resetten naar "nee"
     document.getElementById("priority-no-radio").checked = true;
     document.getElementById("priority-yes-radio").checked = false;
     resetMultiselects();
   }
 
-  // --- DAG SELECTIE EN FILTERING ---
-  // Maak een lijst van alle datums van vandaag t/m einddatum
-  let dateList = [];
-  let currentDate = new Date(startDate);
+  // ---- DATUM SELECTIE EN GENERATIE ----
+  // 1. Alle datums vanaf vandaag t/m einddatum
+  const vandaag = new Date();
+  vandaag.setHours(0, 0, 0, 0);
+  const vandaagStr = vandaag.toISOString().split("T")[0];
+  const endDate = new Date(2028, 11, 31);
+
+  let dateSet = new Set();
+  let currentDate = new Date(vandaag);
   while (currentDate <= endDate) {
-    const dateStr = new Date(
-      currentDate.getTime() - currentDate.getTimezoneOffset() * 60000,
-    )
+    const dateStr = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000)
       .toISOString()
       .split("T")[0];
-    dateList.push(dateStr);
+    dateSet.add(dateStr);
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Vandaag als string
-  const todayStr = new Date(
-    new Date().getTime() - new Date().getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .split("T")[0];
-
-  // Bepaal of een dag relevant is (moet getoond worden)
-  function isDayRelevant(dateStr) {
-    if (dateStr === todayStr) return true;
-    if (dateStr > todayStr) return true;
-    // Check of er nog niet-afgevinkte klanten zijn op deze dag
-    const klanten = savedCustomers[dateStr] || [];
-    const checked = checkedCustomers[dateStr] || [];
-    // Toon als er minimaal 1 klant is die NIET is afgevinkt
-    return klanten.some(
-      (k) =>
-        !checked.some(
-          (c) =>
-            c.name === k.name &&
-            c.id === k.id &&
-            (c.jobTypes
-              ? JSON.stringify(c.jobTypes) === JSON.stringify(k.jobTypes)
-              : c.jobType === k.jobType) &&
-            (c.employees
-              ? JSON.stringify(c.employees) === JSON.stringify(k.employees)
-              : c.employee === k.employee),
-        ),
-    );
+  // 2. Alle datums vóór vandaag waar klanten op staan
+  for (const klantDatum of Object.keys(savedCustomers)) {
+    if (
+      klantDatum !== "_checkedCustomers" &&
+      klantDatum < vandaagStr &&
+      savedCustomers[klantDatum] &&
+      savedCustomers[klantDatum].length > 0
+    ) {
+      dateSet.add(klantDatum);
+    }
   }
 
-  // Kalender genereren (alleen relevante dagen)
+  // Sorteer de datums
+  const dateList = Array.from(dateSet).sort();
+
   let allDateBoxes = [];
   dateList.forEach((dateStr) => {
-    if (!isDayRelevant(dateStr)) return;
-
     const dateObj = new Date(dateStr + "T00:00:00");
     const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
     if (!monthMap[monthKey]) {
@@ -246,7 +208,6 @@ window.onload = function () {
     dateBox.appendChild(arrow);
     dateBox.appendChild(dateText);
 
-    // Weeknummer toevoegen
     const weekNr = getWeekNumber(dateObj);
     const weekNrSpan = document.createElement("span");
     weekNrSpan.classList.add("weeknr");
@@ -269,6 +230,13 @@ window.onload = function () {
     const customerDetails = document.createElement("div");
     customerDetails.classList.add("customer-details");
     customerDetails.id = detailId;
+
+    // Toevoeging: open details als er klanten zijn
+    if (savedCustomers[dateStr] && savedCustomers[dateStr].length > 0) {
+      customerDetails.classList.add("show");
+      arrow.style.transform = "rotate(90deg)";
+    }
+    // einde toevoeging
 
     const table = document.createElement("table");
     table.classList.add("customer-table");
@@ -305,7 +273,18 @@ window.onload = function () {
     dateContainer.appendChild(customerDetails);
   });
 
-  // Zoek op datum
+  // ---- REST VAN DE CODE ----
+
+  function updateCheckedCustomersOnServer() {
+    savedCustomers._checkedCustomers = checkedCustomers;
+    saveCustomers(savedCustomers);
+  }
+
+  function updateSavedCustomersOnServer() {
+    savedCustomers._checkedCustomers = checkedCustomers;
+    saveCustomers(savedCustomers);
+  }
+
   searchButton &&
     (searchButton.onclick = function () {
       const searchDate = searchDateInput.value;
@@ -313,7 +292,6 @@ window.onload = function () {
         alert("Voer een geldige datum in.");
         return;
       }
-
       const dateBox = document.querySelector(`[data-date="${searchDate}"]`);
       if (dateBox) {
         dateBox.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -324,7 +302,6 @@ window.onload = function () {
       }
     });
 
-  // Zoek op naam
   searchNameButton &&
     (searchNameButton.onclick = function () {
       const searchName = searchNameInput.value.trim().toLowerCase();
@@ -332,16 +309,13 @@ window.onload = function () {
         alert("Voer een geldige naam in.");
         return;
       }
-
       let found = false;
-
       for (const dateStr in savedCustomers) {
-        if (!isDayRelevant(dateStr)) continue;
+        if (dateStr === "_checkedCustomers") continue;
         const customers = savedCustomers[dateStr];
         const tbody = document.getElementById(`table-body-${dateStr}`);
         const dateBox = document.querySelector(`[data-date="${dateStr}"]`);
         const customerDetails = document.getElementById(`details-${dateStr}`);
-
         if (customers) {
           customers.forEach((customer, index) => {
             if (customer.name.toLowerCase().includes(searchName)) {
@@ -349,23 +323,19 @@ window.onload = function () {
                 customerDetails.classList.add("show");
                 dateBox.scrollIntoView({ behavior: "smooth", block: "center" });
               }
-
               const row = tbody.children[index];
               row.classList.add("highlight");
               setTimeout(() => row.classList.remove("highlight"), 2000);
-
               found = true;
             }
           });
         }
       }
-
       if (!found) {
         alert("Geen klant gevonden met de opgegeven naam.");
       }
     });
 
-  // Zoek op weeknummer (vanaf vandaag, exacte match)
   searchWeekButton &&
     (searchWeekButton.onclick = function () {
       const weekNr = parseInt(searchWeekInput.value, 10);
@@ -377,7 +347,6 @@ window.onload = function () {
       const today = new Date();
       let closestBox = null;
       let closestDate = null;
-
       document.querySelectorAll(".date-box").forEach((box) => {
         const weekSpan = box.querySelector(".weeknr");
         const dateStr = box.getAttribute("data-date");
@@ -389,18 +358,15 @@ window.onload = function () {
           }
         }
       });
-
       if (closestBox) {
         closestBox.scrollIntoView({ behavior: "smooth", block: "center" });
         closestBox.classList.add("highlight");
         setTimeout(() => closestBox.classList.remove("highlight"), 2000);
         found = true;
       }
-
       if (!found) alert("Geen dagen gevonden voor deze week (vanaf vandaag).");
     });
 
-  // Zoek op werknemer
   searchEmployeeButton &&
     (searchEmployeeButton.onclick = function () {
       const searchEmp = searchEmployeeInput.value.trim().toLowerCase();
@@ -410,7 +376,7 @@ window.onload = function () {
       }
       let found = false;
       for (const dateStr in savedCustomers) {
-        if (!isDayRelevant(dateStr)) continue;
+        if (dateStr === "_checkedCustomers") continue;
         const customers = savedCustomers[dateStr];
         const tbody = document.getElementById(`table-body-${dateStr}`);
         const dateBox = document.querySelector(`[data-date="${dateStr}"]`);
@@ -436,7 +402,6 @@ window.onload = function () {
       if (!found) alert("Geen klant gevonden met deze werknemer.");
     });
 
-  // Edit-mode variabelen
   let editMode = false;
   let editOldDateStr = null;
   let editOldCustomer = null;
@@ -460,13 +425,9 @@ window.onload = function () {
       const name = document.getElementById("customer-name").value.trim();
       const id = document.getElementById("customer-id").value.trim();
       const endDate = document.getElementById("customer-enddate").value.trim();
-
-      // Gebruik multiselect helpers
       const jobTypes = getSelectedJobTypes();
       const employees = getSelectedEmployees();
-
       const pdfInput = document.getElementById("customer-pdf");
-      // Prioriteit ophalen uit radio buttons
       const isHighPriority =
         document.getElementById("priority-yes-radio").checked;
 
@@ -477,19 +438,14 @@ window.onload = function () {
 
       const dateStr = new Date(
         new Date(endDate).getTime() -
-          new Date(endDate).getTimezoneOffset() * 60000,
+          new Date(endDate).getTimezoneOffset() * 60000
       )
         .toISOString()
         .split("T")[0];
 
       if (name && id && jobTypes.length > 0 && employees.length > 0) {
         const tbody = document.getElementById(`table-body-${dateStr}`);
-        if (!tbody) {
-          alert("Er is een probleem met de geselecteerde datum.");
-          return;
-        }
-
-        // Bouw klantobject voor melding
+        if (!savedCustomers[dateStr]) savedCustomers[dateStr] = [];
         const klantObj = {
           name,
           id,
@@ -500,7 +456,6 @@ window.onload = function () {
         };
 
         if (editMode && editOldCustomer) {
-          // Verwijder oude klant uit oude datum
           if (savedCustomers[editOldDateStr]) {
             savedCustomers[editOldDateStr] = savedCustomers[
               editOldDateStr
@@ -511,178 +466,32 @@ window.onload = function () {
                   c.id === editOldCustomer.id &&
                   JSON.stringify(c.jobTypes || [c.jobType]) ===
                     JSON.stringify(
-                      editOldCustomer.jobTypes || [editOldCustomer.jobType],
+                      editOldCustomer.jobTypes || [editOldCustomer.jobType]
                     ) &&
                   JSON.stringify(c.employees || [c.employee]) ===
                     JSON.stringify(
-                      editOldCustomer.employees || [editOldCustomer.employee],
+                      editOldCustomer.employees || [editOldCustomer.employee]
                     )
-                ),
+                )
             );
-            // Verwijder rij uit oude tbody als datum is gewijzigd
-            if (editOldDateStr !== dateStr) {
-              const oldTbody = document.getElementById(
-                `table-body-${editOldDateStr}`,
-              );
-              if (oldTbody) {
-                for (let i = 0; i < oldTbody.children.length; i++) {
-                  const row = oldTbody.children[i];
-                  if (
-                    row.children[1].textContent === editOldCustomer.name &&
-                    row.children[2].textContent === editOldCustomer.id &&
-                    row.children[3].textContent ===
-                      (editOldCustomer.jobTypes
-                        ? editOldCustomer.jobTypes.join(", ")
-                        : editOldCustomer.jobType) &&
-                    row.children[4].textContent ===
-                      (editOldCustomer.employees
-                        ? editOldCustomer.employees.join(", ")
-                        : editOldCustomer.employee)
-                  ) {
-                    oldTbody.removeChild(row);
-                    break;
-                  }
-                }
-              }
-            }
-            // Verwijder dag als leeg
             if (savedCustomers[editOldDateStr].length === 0) {
               delete savedCustomers[editOldDateStr];
-              localStorage.setItem(
-                "savedCustomers",
-                JSON.stringify(savedCustomers),
-              );
-            }
-            if (
-              checkedCustomers[editOldDateStr] &&
-              checkedCustomers[editOldDateStr].length === 0
-            ) {
-              delete checkedCustomers[editOldDateStr];
-              localStorage.setItem(
-                "checkedCustomers",
-                JSON.stringify(checkedCustomers),
-              );
             }
           }
-          // Voeg nieuwe klant toe
           if (!savedCustomers[dateStr]) savedCustomers[dateStr] = [];
           savedCustomers[dateStr].push(klantObj);
-          localStorage.setItem(
-            "savedCustomers",
-            JSON.stringify(savedCustomers),
-          );
-
-          // Zet checkedCustomers entry over als klant bewerkt wordt en datum wijzigt
-          if (editOldDateStr !== dateStr && checkedCustomers[editOldDateStr]) {
-            checkedCustomers[dateStr] = checkedCustomers[dateStr] || [];
-            checkedCustomers[editOldDateStr].forEach((chk) => {
-              if (
-                chk.name === editOldCustomer.name &&
-                chk.id === editOldCustomer.id &&
-                JSON.stringify(chk.jobTypes || [chk.jobType]) ===
-                  JSON.stringify(
-                    editOldCustomer.jobTypes || [editOldCustomer.jobType],
-                  ) &&
-                JSON.stringify(chk.employees || [chk.employee]) ===
-                  JSON.stringify(
-                    editOldCustomer.employees || [editOldCustomer.employee],
-                  )
-              ) {
-                checkedCustomers[dateStr].push(klantObj);
-              }
-            });
-            checkedCustomers[editOldDateStr] = checkedCustomers[
-              editOldDateStr
-            ].filter(
-              (chk) =>
-                !(
-                  chk.name === editOldCustomer.name &&
-                  chk.id === editOldCustomer.id &&
-                  JSON.stringify(chk.jobTypes || [chk.jobType]) ===
-                    JSON.stringify(
-                      editOldCustomer.jobTypes || [editOldCustomer.jobType],
-                    ) &&
-                  JSON.stringify(chk.employees || [chk.employee]) ===
-                    JSON.stringify(
-                      editOldCustomer.employees || [editOldCustomer.employee],
-                    )
-                ),
-            );
-            // Verwijder dag als leeg
-            if (checkedCustomers[editOldDateStr].length === 0) {
-              delete checkedCustomers[editOldDateStr];
-              localStorage.setItem(
-                "checkedCustomers",
-                JSON.stringify(checkedCustomers),
-              );
-            }
-            localStorage.setItem(
-              "checkedCustomers",
-              JSON.stringify(checkedCustomers),
-            );
-          }
-
-          const row = createCustomerRow(
-            name,
-            id,
-            jobTypes,
-            employees,
-            pdfInput,
-            dateStr,
-            tbody,
-            isHighPriority,
-            dateStr,
-          );
-          tbody.appendChild(row);
-          row.classList.add("highlight");
-          setTimeout(() => row.classList.remove("highlight"), 2000);
-
-          showNotification(
-            `Klant bewerkt:<br>${klantInfoString(klantObj, dateStr)}`,
-            "success",
-          );
+          saveCustomers(savedCustomers);
         } else {
-          // Toevoegen
-          const row = createCustomerRow(
-            name,
-            id,
-            jobTypes,
-            employees,
-            pdfInput,
-            dateStr,
-            tbody,
-            isHighPriority,
-            dateStr,
-          );
-          tbody.appendChild(row);
-
-          row.classList.add("highlight");
-          setTimeout(() => row.classList.remove("highlight"), 2000);
-
-          if (!savedCustomers[dateStr]) savedCustomers[dateStr] = [];
           savedCustomers[dateStr].push(klantObj);
-          localStorage.setItem(
-            "savedCustomers",
-            JSON.stringify(savedCustomers),
-          );
-
-          showNotification(
-            `Klant toegevoegd:<br>${klantInfoString(klantObj, dateStr)}`,
-            "success",
-          );
+          saveCustomers(savedCustomers);
         }
 
-        customerForm.style.display = "none";
-        resetCustomerForm();
-        editMode = false;
-        editOldDateStr = null;
-        editOldCustomer = null;
+        location.reload();
       } else {
         alert("Vul alle velden in!");
       }
     });
 
-  // --- GEUPDATE FUNCTIE: klant-rij rood maken bij prioriteit en groen bij checkbox ---
   function createCustomerRow(
     name,
     id,
@@ -692,7 +501,7 @@ window.onload = function () {
     dateStr,
     tbody,
     isHighPriority = false,
-    datumVoorMelding = null,
+    datumVoorMelding = null
   ) {
     const row = document.createElement("tr");
     if (isHighPriority) row.classList.add("high-priority");
@@ -723,6 +532,7 @@ window.onload = function () {
       pdfTd.appendChild(link);
     } else if (pdfInput.pdfName) {
       pdfTd.textContent = pdfInput.pdfName;
+      pdfTd.title = "Bestand alleen beschikbaar direct na toevoegen";
     } else {
       pdfTd.textContent = "Geen PDF";
     }
@@ -744,12 +554,10 @@ window.onload = function () {
 
     row.appendChild(actionsTd);
 
-    // Checkbox afvinken = groen maken + opslaan in localStorage
     checkbox.addEventListener("change", function () {
       checkedCustomers[dateStr] = checkedCustomers[dateStr] || [];
       if (checkbox.checked) {
         row.classList.add("checked-row");
-        // Voeg toe aan checkedCustomers
         checkedCustomers[dateStr].push({
           name,
           id,
@@ -758,7 +566,6 @@ window.onload = function () {
         });
       } else {
         row.classList.remove("checked-row");
-        // Verwijder uit checkedCustomers
         checkedCustomers[dateStr] = checkedCustomers[dateStr].filter(
           (c) =>
             !(
@@ -766,44 +573,18 @@ window.onload = function () {
               c.id === id &&
               JSON.stringify(c.jobTypes) === JSON.stringify(jobTypes) &&
               JSON.stringify(c.employees) === JSON.stringify(employees)
-            ),
+            )
         );
       }
-      localStorage.setItem(
-        "checkedCustomers",
-        JSON.stringify(checkedCustomers),
-      );
-
-      // Herlaad pagina als alles afgevinkt ixs op een dag vóór vandaag
-      if (dateStr < todayStr) {
-        const klanten = savedCustomers[dateStr] || [];
-        const checked = checkedCustomers[dateStr] || [];
-        const allChecked =
-          klanten.length > 0 &&
-          klanten.every((k) =>
-            checked.some(
-              (c) =>
-                c.name === k.name &&
-                c.id === k.id &&
-                JSON.stringify(c.jobTypes) === JSON.stringify(k.jobTypes) &&
-                JSON.stringify(c.employees) === JSON.stringify(k.employees),
-            ),
-          );
-        if (allChecked) {
-          location.reload();
-        }
-      }
-      // Verwijder dag als leeg
+      savedCustomers._checkedCustomers = checkedCustomers;
+      saveCustomers(savedCustomers);
       if (checkedCustomers[dateStr] && checkedCustomers[dateStr].length === 0) {
         delete checkedCustomers[dateStr];
-        localStorage.setItem(
-          "checkedCustomers",
-          JSON.stringify(checkedCustomers),
-        );
+        savedCustomers._checkedCustomers = checkedCustomers;
+        saveCustomers(savedCustomers);
       }
     });
 
-    // Bij laden: zet checkbox en groen als nodig
     if (
       checkedCustomers[dateStr] &&
       checkedCustomers[dateStr].some(
@@ -811,7 +592,7 @@ window.onload = function () {
           c.name === name &&
           c.id === id &&
           JSON.stringify(c.jobTypes) === JSON.stringify(jobTypes) &&
-          JSON.stringify(c.employees) === JSON.stringify(employees),
+          JSON.stringify(c.employees) === JSON.stringify(employees)
       )
     ) {
       checkbox.checked = true;
@@ -828,8 +609,6 @@ window.onload = function () {
         document.getElementById("customer-name").value = cells[1].textContent;
         document.getElementById("customer-id").value = cells[2].textContent;
         document.getElementById("customer-enddate").value = selectedDateStr;
-
-        // Multiselects
         const jobTypes = cells[3].textContent
           .split(",")
           .map((s) => s.trim())
@@ -839,8 +618,6 @@ window.onload = function () {
           .map((s) => s.trim())
           .filter(Boolean);
         setMultiselectValues(jobTypes, employees);
-
-        // Prioriteit radio buttons instellen
         if (selectedRow.classList.contains("high-priority")) {
           document.getElementById("priority-yes-radio").checked = true;
           document.getElementById("priority-no-radio").checked = false;
@@ -848,8 +625,6 @@ window.onload = function () {
           document.getElementById("priority-yes-radio").checked = false;
           document.getElementById("priority-no-radio").checked = true;
         }
-
-        // Zet editMode en onthoud oude klantinfo
         editMode = true;
         editOldDateStr = selectedDateStr;
         editOldCustomer = {
@@ -858,7 +633,6 @@ window.onload = function () {
           jobTypes,
           employees,
         };
-
         customerForm.style.display = "block";
         selectedRow.remove();
       }
@@ -888,7 +662,6 @@ window.onload = function () {
           const tbody = selectedRow.parentElement;
           tbody.removeChild(selectedRow);
 
-          // Verwijder klant uit savedCustomers
           savedCustomers[selectedDateStr] = savedCustomers[
             selectedDateStr
           ].filter(
@@ -900,19 +673,13 @@ window.onload = function () {
                   JSON.stringify(klantObj.jobTypes) &&
                 JSON.stringify(c.employees) ===
                   JSON.stringify(klantObj.employees)
-              ),
+              )
           );
-          // Verwijder dag als leeg
           if (savedCustomers[selectedDateStr].length === 0) {
             delete savedCustomers[selectedDateStr];
           }
-          // Sla altijd op!
-          localStorage.setItem(
-            "savedCustomers",
-            JSON.stringify(savedCustomers),
-          );
+          saveCustomers(savedCustomers);
 
-          // Ook uit checkedCustomers verwijderen
           if (checkedCustomers[selectedDateStr]) {
             checkedCustomers[selectedDateStr] = checkedCustomers[
               selectedDateStr
@@ -925,15 +692,13 @@ window.onload = function () {
                     JSON.stringify(klantObj.jobTypes) &&
                   JSON.stringify(c.employees) ===
                     JSON.stringify(klantObj.employees)
-                ),
+                )
             );
             if (checkedCustomers[selectedDateStr].length === 0) {
               delete checkedCustomers[selectedDateStr];
             }
-            localStorage.setItem(
-              "checkedCustomers",
-              JSON.stringify(checkedCustomers),
-            );
+            savedCustomers._checkedCustomers = checkedCustomers;
+            saveCustomers(savedCustomers);
           }
 
           deleteModal.style.display = "none";
@@ -941,28 +706,8 @@ window.onload = function () {
 
           showNotification(
             `Klant verwijderd:<br>${klantInfoString(klantObj, selectedDateStr)}`,
-            "error",
+            "error"
           );
-
-          // Herlaad pagina als alles afgevinkt is op een dag vóór vandaag
-          if (selectedDateStr < todayStr) {
-            const klanten = savedCustomers[selectedDateStr] || [];
-            const checked = checkedCustomers[selectedDateStr] || [];
-            const allChecked =
-              klanten.length > 0 &&
-              klanten.every((k) =>
-                checked.some(
-                  (c) =>
-                    c.name === k.name &&
-                    c.id === k.id &&
-                    JSON.stringify(c.jobTypes) === JSON.stringify(k.jobTypes) &&
-                    JSON.stringify(c.employees) === JSON.stringify(k.employees),
-                ),
-              );
-            if (allChecked || klanten.length === 0) {
-              location.reload();
-            }
-          }
         };
 
         cancelDeleteBtn &&
@@ -990,7 +735,7 @@ window.onload = function () {
 
   function showNotification(message, type) {
     const notificationContainer = document.getElementById(
-      "notification-container",
+      "notification-container"
     );
     notificationContainer.innerHTML = message;
 
@@ -1001,23 +746,18 @@ window.onload = function () {
     }
 
     notificationContainer.style.display = "block";
-
-    // Voeg klik-event toe om notificatie te sluiten
     notificationContainer.onclick = function () {
       notificationContainer.style.display = "none";
     };
-
     setTimeout(() => {
       notificationContainer.style.display = "none";
     }, 7000);
   }
 
-  // Laad bestaande klanten uit localStorage (alleen voor relevante dagen)
   for (const dateStr in savedCustomers) {
-    if (!isDayRelevant(dateStr)) continue;
+    if (dateStr === "_checkedCustomers") continue;
     const tbody = document.getElementById(`table-body-${dateStr}`);
     if (tbody) {
-      // Sorteer: eerst hoge prioriteit, dan de rest
       const sorted = [...savedCustomers[dateStr]].sort((a, b) => {
         return (b.isHighPriority === true) - (a.isHighPriority === true);
       });
@@ -1031,10 +771,25 @@ window.onload = function () {
           dateStr,
           tbody,
           c.isHighPriority,
-          dateStr,
+          dateStr
         );
         tbody.appendChild(row);
       });
     }
   }
 };
+document.getElementById("search-date").addEventListener("change", function() {
+  const val = this.value;
+  if (!val) {
+    document.getElementById("search-weeknr").textContent = "";
+    return;
+  }
+  const d = new Date(val);
+  function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  }
+  document.getElementById("search-weeknr").textContent = "Week " + getWeekNumber(d);
+});

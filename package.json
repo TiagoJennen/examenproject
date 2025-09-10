@@ -1,8 +1,6 @@
 {
-  "devDependencies": {
-    "prettier": "^3.5.3"
-  },
-  "scripts": {
-    "format": "prettier --write \"**/*.{js,css,html}\""
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   }
 }
