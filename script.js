@@ -1,3 +1,18 @@
+const SERVER_URL = "http://10.3.1.18:3000/data";
+
+async function loadCustomers() {
+  const res = await fetch(SERVER_URL);
+  return await res.json();
+}
+
+async function saveCustomers(data) {
+  await fetch(SERVER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
 // Data lokaal opslaan in de browser
 function loadCustomers() {
   const data = localStorage.getItem("customers");
@@ -37,7 +52,9 @@ window.onload = function () {
   const searchWeekInput = document.getElementById("search-week");
   const searchWeekButton = document.getElementById("search-week-button");
   const searchEmployeeInput = document.getElementById("search-employee");
-  const searchEmployeeButton = document.getElementById("search-employee-button");
+  const searchEmployeeButton = document.getElementById(
+    "search-employee-button"
+  );
 
   const actionsModal = document.getElementById("actions-modal");
   const actionEdit = document.getElementById("action-edit");
@@ -51,12 +68,16 @@ window.onload = function () {
 
   function getSelectedJobTypes() {
     return Array.from(
-      document.querySelectorAll('#jobtype-options input[type="checkbox"]:checked')
+      document.querySelectorAll(
+        '#jobtype-options input[type="checkbox"]:checked'
+      )
     ).map((cb) => cb.value);
   }
   function getSelectedEmployees() {
     return Array.from(
-      document.querySelectorAll('#employee-options input[type="checkbox"]:checked')
+      document.querySelectorAll(
+        '#employee-options input[type="checkbox"]:checked'
+      )
     ).map((cb) => cb.value);
   }
   function resetMultiselects() {
@@ -110,7 +131,8 @@ window.onload = function () {
   // Data ophalen uit localStorage
   let savedCustomers = loadCustomers();
   let checkedCustomers = savedCustomers._checkedCustomers || {};
-  if (!savedCustomers._checkedCustomers) savedCustomers._checkedCustomers = checkedCustomers;
+  if (!savedCustomers._checkedCustomers)
+    savedCustomers._checkedCustomers = checkedCustomers;
   let selectedRow = null;
   let selectedDateStr = null;
 
@@ -126,7 +148,13 @@ window.onload = function () {
   }
 
   function klantInfoString(klant, datum) {
-    return `Datum: ${datum}<br>Naam: ${klant.name}, Omschrijving: ${klant.id}, Type werk: ${(klant.jobTypes || [klant.jobType]).join(", ")}, Werknemer: ${(klant.employees || [klant.employee]).join(", ")}, PDF: ${klant.pdfName || "Geen PDF"}, Hoge prioriteit: ${klant.isHighPriority ? "Ja" : "Nee"}`;
+    return `Datum: ${datum}<br>Naam: ${klant.name}, Omschrijving: ${
+      klant.id
+    }, Type werk: ${(klant.jobTypes || [klant.jobType]).join(
+      ", "
+    )}, Werknemer: ${(klant.employees || [klant.employee]).join(", ")}, PDF: ${
+      klant.pdfName || "Geen PDF"
+    }, Hoge prioriteit: ${klant.isHighPriority ? "Ja" : "Nee"}`;
   }
 
   function resetCustomerForm() {
@@ -149,7 +177,9 @@ window.onload = function () {
   let dateSet = new Set();
   let currentDate = new Date(vandaag);
   while (currentDate <= endDate) {
-    const dateStr = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000)
+    const dateStr = new Date(
+      currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
+    )
       .toISOString()
       .split("T")[0];
     dateSet.add(dateStr);
@@ -174,11 +204,16 @@ window.onload = function () {
   let allDateBoxes = [];
   dateList.forEach((dateStr) => {
     const dateObj = new Date(dateStr + "T00:00:00");
-    const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
+    const monthKey = `${dateObj.getFullYear()}-${String(
+      dateObj.getMonth() + 1
+    ).padStart(2, "0")}`;
     if (!monthMap[monthKey]) {
       const monthBox = document.createElement("div");
       monthBox.classList.add("month-box");
-      monthBox.textContent = `${dateObj.toLocaleString("nl-NL", { month: "long", year: "numeric" })}`;
+      monthBox.textContent = `${dateObj.toLocaleString("nl-NL", {
+        month: "long",
+        year: "numeric",
+      })}`;
       monthBox.onclick = function () {
         document
           .querySelectorAll(`[data-month="${monthKey}"]`)
@@ -705,7 +740,10 @@ window.onload = function () {
           actionsModal.style.display = "none";
 
           showNotification(
-            `Klant verwijderd:<br>${klantInfoString(klantObj, selectedDateStr)}`,
+            `Klant verwijderd:<br>${klantInfoString(
+              klantObj,
+              selectedDateStr
+            )}`,
             "error"
           );
         };
@@ -778,7 +816,7 @@ window.onload = function () {
     }
   }
 };
-document.getElementById("search-date").addEventListener("change", function() {
+document.getElementById("search-date").addEventListener("change", function () {
   const val = this.value;
   if (!val) {
     document.getElementById("search-weeknr").textContent = "";
@@ -791,5 +829,6 @@ document.getElementById("search-date").addEventListener("change", function() {
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
   }
-  document.getElementById("search-weeknr").textContent = "Week " + getWeekNumber(d);
+  document.getElementById("search-weeknr").textContent =
+    "Week " + getWeekNumber(d);
 });
